@@ -73,7 +73,16 @@ const mark_active_question = (e = undefined) => {
 
 	$(".current-question").text(`${next_index}`);
 	$("#check").removeClass("hide").attr("disabled", true);
-	$("#next").attr("disabled", true);
+	$("#next").attr("disabled", false);
+	console.log(current_index)
+	if (parseInt(current_index) < 1){
+		$("#prev").addClass("hide");
+		console.log("in")
+	}else{$("#prev").removeClass("hide");}
+	if (current_index > 1){
+		$("#prev").attr("disabled", false);	
+	}
+	
 	$(".explanation").addClass("hide");
 
 	$(".timer").addClass("hide");
@@ -85,24 +94,29 @@ const mark_active_question = (e = undefined) => {
 const mark_prev_active_question = (e = undefined) => {
 	let total_questions = $(".question").length;
 	let current_index = $(".active-question").attr("data-qt-index") || 0;
-	let prev_index = parseInt(current_index) - 1;
-
+	let prev_index = parseInt(current_index) - 1 || 0;
+	console.log("pre", prev_index)
 	if (this.show_answers) {
 		$("#prev").addClass("hide");
 		$("#next").addClass("hide");
 	} else if (!this.show_answers && current_index == 1) {
-		$("#prev").addClass("hide");
 		$("#summary").removeClass("hide");
-	} 
+	}
+	if (parseInt(prev_index) ==  1){
+		$("#prev").addClass("hide");
+	} else
+		{$("#prev").removeClass("hide");} 
 
 	$(".question").addClass("hide").removeClass("active-question");
 	$(`.question[data-qt-index='${prev_index}']`)
 		.removeClass("hide")
-		.addClass("active-question");
+		.addClass("active-question");s
 
 	$(".current-question").text(`${prev_index}`);
 	$("#check").removeClass("hide").attr("disabled", true);
-	$("#prev").attr("disabled", true);
+	$("#prev").attr("disabled", false);
+	$("#next").removeClass("hide");
+	
 	$(".explanation").addClass("hide");
 
 	$(".timer").addClass("hide");
@@ -144,6 +158,7 @@ const initialize_timer = () => {
 };
 
 const enable_check = (e) => {
+	
 	if ($(".option:checked").length || $(".possibility").val().trim()) {
 		$("#check").removeAttr("disabled");
 		$("#next").removeAttr("disabled");
@@ -173,12 +188,13 @@ const quiz_summary = (e = undefined) => {
 			$(".quiz-footer span").addClass("hide");
 			$("#quiz-form").prepend(
 				`<div class="summary bold-heading text-center">
-					${__("Your score is")} ${data.message.score}
-					${__("out of")} ${total_questions}
+					${__("Your submission is successful. We will update you asap.")}
+				
 				</div>`
 			);
 			$("#try-again").attr("data-submission", data.message.submission);
 			$("#try-again").removeClass("hide");
+			$("#prev").addClass("hide");
 			self.quiz_submitted = true;
 			if (this.hasOwnProperty("marked_as_complete")) {
 				mark_progress();
@@ -201,13 +217,14 @@ const try_quiz_again = (e) => {
 
 const check_answer = (e = undefined) => {
 	e && e.preventDefault();
+	console.log("testing")
 	let answer = $(".active-question textarea");
 	let total_questions = $(".question").length;
 	let current_index = $(".active-question").attr("data-qt-index");
 
-	if (answer.length && !answer.val().trim()) {
-		frappe.throw(__("Please enter your answer"));
-	}
+	// if (answer.length && !answer.val().trim()) {
+	// 	frappe.throw(__("Please enter your answer"));
+	// }
 
 	clearInterval(self.timer);
 	$(".timer").addClass("hide");
@@ -220,9 +237,9 @@ const check_answer = (e = undefined) => {
 		$("#prev").removeClass("hide");
 	} else if (this.show_answers) {
 		$("#next").removeClass("hide");
-		if (current_index > 1){
-			$("#prev").removeClass("hide");
-		}
+		// if (current_index > 1){
+		// 	$("#prev").removeClass("hide");
+		// }
 	} 
 	parse_options();
 };
