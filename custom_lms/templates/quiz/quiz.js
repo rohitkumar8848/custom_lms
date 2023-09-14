@@ -94,8 +94,8 @@ const mark_active_question = (e = undefined) => {
 const mark_prev_active_question = (e = undefined) => {
 	let total_questions = $(".question").length;
 	let current_index = $(".active-question").attr("data-qt-index") || 0;
-	let prev_index = parseInt(current_index) - 1 || 0;
-	console.log("pre", prev_index)
+	let prev_index = parseInt(current_index) - 1;
+	console.log("pre", current_index)
 	if (this.show_answers) {
 		$("#prev").addClass("hide");
 		$("#next").addClass("hide");
@@ -110,7 +110,7 @@ const mark_prev_active_question = (e = undefined) => {
 	$(".question").addClass("hide").removeClass("active-question");
 	$(`.question[data-qt-index='${prev_index}']`)
 		.removeClass("hide")
-		.addClass("active-question");s
+		.addClass("active-question");
 
 	$(".current-question").text(`${prev_index}`);
 	$("#check").removeClass("hide").attr("disabled", true);
@@ -217,15 +217,14 @@ const try_quiz_again = (e) => {
 
 const check_answer = (e = undefined) => {
 	e && e.preventDefault();
-	console.log("testing")
+	
 	let answer = $(".active-question textarea");
 	let total_questions = $(".question").length;
 	let current_index = $(".active-question").attr("data-qt-index");
-
 	// if (answer.length && !answer.val().trim()) {
 	// 	frappe.throw(__("Please enter your answer"));
 	// }
-
+	console.log("check",current_index)
 	clearInterval(self.timer);
 	$(".timer").addClass("hide");
 
@@ -241,10 +240,10 @@ const check_answer = (e = undefined) => {
 		// 	$("#prev").removeClass("hide");
 		// }
 	} 
-	parse_options();
+	parse_options(current_index);
 };
 
-const parse_options = () => {
+const parse_options = (current_index) => {
 	let user_answers = [];
 	let element;
 	let type = $(".active-question").data("type");
@@ -261,10 +260,10 @@ const parse_options = () => {
 		element = $(".active-question textarea");
 	}
 
-	is_answer_correct(type, user_answers, element);
+	is_answer_correct(type, user_answers, element, current_index);
 };
 
-const is_answer_correct = (type, user_answers, element) => {
+const is_answer_correct = (type, user_answers, element, current_index) => {
 	frappe.call({
 		async: false,
 		method: "lms.lms.doctype.lms_quiz.lms_quiz.check_answer",
@@ -277,7 +276,7 @@ const is_answer_correct = (type, user_answers, element) => {
 			type == "Choices"
 				? parse_choices(element, data.message)
 				: parse_possible_answers(element, data.message);
-			add_to_local_storage();
+			add_to_local_storage(current_index);
 		},
 	});
 };
@@ -330,17 +329,18 @@ const add_icon = (element, icon) => {
     `);
 };
 
-const add_to_local_storage = () => {
-	let current_index = $(".active-question").attr("data-qt-index");
+const add_to_local_storage = (current_index) => {
+	// let current_index = $(".active-question").attr("data-qt-index");
 	let quiz_name = $("#quiz-title").data("name");
 	let quiz_stored = JSON.parse(localStorage.getItem(quiz_name));
-
+	let total_questions = $(".question").length;
+	
 	let quiz_obj = {
-		question_index: current_index - 1,
+		question_index: current_index-1,
 		answer: self.answer.join(),
 		is_correct: self.is_correct,
 	};
-
+	console.log(quiz_obj)
 	quiz_stored ? quiz_stored.push(quiz_obj) : (quiz_stored = [quiz_obj]);
 	localStorage.setItem(quiz_name, JSON.stringify(quiz_stored));
 
